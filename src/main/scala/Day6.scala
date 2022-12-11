@@ -3,7 +3,7 @@ import scala.io.Source
 class Day6:
 
   def readInput: Vector[String] =
-    var file = Source.fromFile(s"day6_input")
+    var file = Source.fromFile(s"input/day6_input")
     val lines = file.getLines().toVector
     file.close()
     lines

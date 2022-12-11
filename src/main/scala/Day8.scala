@@ -10,7 +10,7 @@ class Day8:
   private val scores = Array.ofDim[Int](gridSize, gridSize)
 
   private def readInput() =
-    var file = Source.fromFile("day8_input")
+    var file = Source.fromFile("input/day8_input")
     val result = file.getLines().toVector
     file.close()
     result

@@ -5,7 +5,7 @@ class Day4:
   private var lines = Vector[String]()
 
   def readInput() =
-    var file = Source.fromFile("day4_input")
+    var file = Source.fromFile("input/day4_input")
     lines = file.getLines().toVector
     file.close()
 

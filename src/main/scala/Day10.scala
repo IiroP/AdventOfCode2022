@@ -11,7 +11,7 @@ class Day10:
   private var currentLine = ""
 
   private def readInput() =
-    var file = Source.fromFile("day10_input")
+    var file = Source.fromFile("input/day10_input")
     val result = file.getLines().toVector
     file.close()
     result

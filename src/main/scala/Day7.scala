@@ -29,7 +29,7 @@ class Day7:
   end Dir
 
   private def readInput(): Vector[String] =
-    var file = Source.fromFile(s"day7_input")
+    var file = Source.fromFile(s"input/day7_input")
     val lines = file.getLines().toVector
     file.close()
     lines

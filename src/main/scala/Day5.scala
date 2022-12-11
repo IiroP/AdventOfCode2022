@@ -9,7 +9,7 @@ class Day5:
   private val boxes = Map[Int, Buffer[Char]]()
 
   def readInput() =
-    var file = Source.fromFile("day5_input")
+    var file = Source.fromFile("input/day5_input")
     lines = file.getLines().toVector
     initial = lines.takeWhile(_ != "").reverse
     instructions = lines.reverse.takeWhile(_ != "").map(_.split(" ").toVector).reverse
