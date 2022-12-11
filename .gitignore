@@ -31,7 +31,6 @@ bin/
 *.iml
 *.ipr
 *.iws
-.idea
 
 # mac
 .DS_Store
