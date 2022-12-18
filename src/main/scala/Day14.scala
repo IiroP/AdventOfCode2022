@@ -11,14 +11,17 @@ object Day14 extends App:
   private val sandStart = (500, 0)
 
   simulate()
-  //grid.printGrid()
+  grid.printGrid()
 
   case class Grid(minX: Int, maxX: Int, maxY: Int):
-    private val blocked = Array.ofDim[Boolean](maxX - minX + 3, maxY + 2)
+    private val blocked = Array.ofDim[Boolean](maxX - minX + 2 * maxY + 1, maxY + 3)
+    for x <- blocked.indices do
+      val y = blocked(0).length - 1
+      blocked(x)(y) = true
 
-    private def toReal(pos: (Int, Int)) = (pos(0) - minX + 1, pos(1))
+    private def toReal(pos: (Int, Int)) = (pos(0) - minX + maxY - 1, pos(1))
 
-    private def toFake(pos: (Int, Int)) = (pos(0) + minX - 1, pos(1))
+    private def toFake(pos: (Int, Int)) = (pos(0) + minX - maxY + 1, pos(1))
 
     def isEmpty(pos: (Int, Int)) =
       val (x, y) = toReal(pos)
@@ -30,9 +33,7 @@ object Day14 extends App:
 
     def nextPosition(current: (Int, Int)): (Int, Int) =
       val (x,y) = toReal(current)
-      if y == maxY || x == 0 then // abyss
-        toFake(x, y)
-      else if !blocked(x)(y + 1) then
+      if !blocked(x)(y + 1) then
         toFake(x, y + 1)
       else if !blocked(x - 1)(y + 1) then
         toFake(x - 1, y + 1)
@@ -105,27 +106,31 @@ object Day14 extends App:
     result
 
   private def simulate() =
-    var abyss = false
+    var end1 = false
+    var end = false
     var sandCounter = 0
 
-    while !abyss do
+    while !end do
       var pos = sandStart
       var rest = false
       while !rest do
         val next = grid.nextPosition(pos)
 
-        if next(1) == lowest then
-          abyss = true
+        if next(1) == lowest && !end1 then
+          end1 = true
+          println(s"Part 1: $sandCounter")
+          grid.printGrid()
+        else if next == sandStart then
+          end = true
+          println(s"Part 2: ${sandCounter + 1}")
 
         if next == pos then
           rest = true
         else
           pos = next
       grid.block(pos)
-      if !abyss then
+      if !end then
         sandCounter += 1
-
-    println(sandCounter)
 
 
 
