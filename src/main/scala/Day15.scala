@@ -1,5 +1,5 @@
 import scala.io.Source
-import scala.math.abs
+import scala.math.{abs, max, min}
 import scala.collection.mutable.Buffer
 
 object Day15 extends App:
@@ -10,6 +10,7 @@ object Day15 extends App:
   private val grid = generateGrid // true means it cannot contain beacon
 
   task1()
+  task2()
   //grid.printGrid()
 
   private def readInput =
@@ -27,6 +28,21 @@ object Day15 extends App:
 
     def inRadius(point: (Int, Int)): Boolean =
       distance(point) <= distance(beacon)
+
+    def edges(addition: Int) =
+      val (x,y) = pos
+      val result = Buffer[(Int, Int)]()
+      val target = radius + addition
+      for xDiff <- Range(0, radius + addition + 1) do
+        val yDiff = target - xDiff
+        val topRight = (x + xDiff, y + yDiff)
+        val topLeft = (x - xDiff, y + yDiff)
+        val bottomRight = (x + xDiff, y - yDiff)
+        val bottomLeft = (x - xDiff, y - yDiff)
+        val unique = Set(topLeft, topRight, bottomRight, bottomLeft)
+        result ++= unique
+      result.toSet.toVector
+
 
   end Sensor
 
@@ -86,4 +102,35 @@ object Day15 extends App:
   def task1() =
     val answer = grid.countBlockedOnRow
     println(answer)
+
+  def task2() =
+    var result: Option[(Int, Int)] = None
+    val visited = Buffer[(Int, Int)]()
+    var row = 0
+
+    def inRange(pos: (Int, Int)) =
+      val max = 4000000
+      val (x,y) = pos
+      x >= 0 && y >= 0 && x <= max && y <= max
+
+    def frequency(pos: (Int, Int)): Long =
+      val (x,y) = pos
+      x.toLong * 4000000 + y.toLong
+
+    for sensor <- sensors if result.isEmpty do
+      val points = sensor.edges(1)
+      val filtered = points.filterNot(visited.contains(_)).filter( inRange(_) )
+      for p <- filtered do
+        var possible = true
+        val otherSensors = sensors.filterNot(_ == sensor)
+        for other <- otherSensors do
+          if other.inRadius(p) then
+            possible = false
+        if possible then
+          result = Some(p)
+        else
+          visited += p
+    println(frequency(result.getOrElse((0,0))))
+
+
 
