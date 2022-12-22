@@ -9,6 +9,7 @@ object Day16 extends App:
   private val start = "AA"
 
   task1()
+  task2()
 
   private def readInput =
     var file = Source.fromFile("input/day16_input")
@@ -40,7 +41,7 @@ object Day16 extends App:
     def updateDistances() =
       dijkstra_results = dijkstra(this, valves.values.toVector)
 
-    def shortestRoute(other: Valve) =
+    def shortestRoute(other: Valve): Int =
       val (dist, prev) = dijkstra_results
       val path = Buffer[Valve]()
       var u: Option[Valve] = Some(other)
@@ -49,6 +50,16 @@ object Day16 extends App:
           path.prepend(u.get)
           u = prev(u.get)
       path.length - 1
+
+    def shortestPathTo(other: Valve): Vector[Valve] =
+      val (dist, prev) = dijkstra_results
+      val path = Buffer[Valve]()
+      var u: Option[Valve] = Some(other)
+      if prev(u.get).isDefined || u.get == other then
+        while u.isDefined do
+          path.prepend(u.get)
+          u = prev(u.get)
+      path.tail.toVector
 
 /*    def reset() =
       opened = false
@@ -119,4 +130,65 @@ object Day16 extends App:
           nextMove(point, timeAfterOpen, newFlow, flownAfterOpen, remaining.filterNot(_ == point), path.appended(point))
 
     nextMove(current, 0, 0, 0, toBeOpened, Vector(current))
+    println(bestScore)
+
+  // Very slow but works
+  private def task2() =
+    val timeLimit = 26
+    val startPosition = valves(start)
+    val toBeOpened = valves.values.filter(_.flow > 0).toVector
+    var bestScore = 0
+    valves.values.foreach(_.updateDistances())
+
+    def nextMove(now: Valve, elapsed: Int, currentFlow: Int, alreadyFlown: Int, remaining: Vector[Valve], path: Vector[Valve]): Unit =
+      val timeLeft = timeLimit - elapsed
+      val trulyRemaining = remaining.filter( now.shortestRoute(_) < timeLeft ).filterNot( path.contains(_) )
+
+      if trulyRemaining.isEmpty then
+        val score = alreadyFlown + timeLeft * currentFlow
+        if score > bestScore then
+          bestScore = score
+      else
+        for point <- trulyRemaining do
+          val distance = now.shortestRoute(point)
+          val flownAfterOpen = alreadyFlown + (distance + 1) * currentFlow
+          val timeAfterOpen = elapsed + distance + 1
+          val newFlow = currentFlow + point.flow
+          val newPath = path.appended(point)
+          nextMove(point, timeAfterOpen, newFlow, flownAfterOpen, remaining.filterNot(_ == point), newPath)
+        val valueIfStopped = stopOpening(elapsed, currentFlow, alreadyFlown, remaining, path)
+        if valueIfStopped > bestScore then
+          bestScore = valueIfStopped
+
+    /*
+    * Idea: Player opens x valves, then elephant opens the rest. Calculate how much pressure would be released
+    * */
+    def stopOpening(elapsed: Int, currentFlow: Int, alreadyFlown: Int, remaining: Vector[Valve], visited: Vector[Valve]): Int =
+      val timeLeft = timeLimit - elapsed
+      val playerScore = alreadyFlown + timeLeft * currentFlow
+      val elephantScore = bestScoreForElephant(startPosition, 0, 0, 0, remaining, visited)
+      val total = playerScore + elephantScore
+      total
+
+
+    def bestScoreForElephant(now: Valve, elapsed: Int, currentFlow: Int, alreadyFlown: Int, remaining: Vector[Valve], path: Vector[Valve]): Int =
+      val timeLeft = timeLimit - elapsed
+      val trulyRemaining = remaining.filter( now.shortestRoute(_) < timeLeft ).filterNot( path.contains(_) )
+      if trulyRemaining.isEmpty then
+        val score = alreadyFlown + timeLeft * currentFlow
+        score
+      else
+        val scores = Buffer[Int]()
+        for point <- trulyRemaining do
+          val distance = now.shortestRoute(point)
+          val flownAfterOpen = alreadyFlown + (distance + 1) * currentFlow
+          val timeAfterOpen = elapsed + distance + 1
+          val newFlow = currentFlow + point.flow
+          val newPath = path.appended(point)
+          val result = bestScoreForElephant(point, timeAfterOpen, newFlow, flownAfterOpen, remaining.filterNot(_ == point), newPath)
+          scores += result
+        scores.maxOption.getOrElse(0)
+
+
+    nextMove(startPosition, 0, 0, 0, toBeOpened, Vector(startPosition))
     println(bestScore)
