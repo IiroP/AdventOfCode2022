@@ -18,8 +18,9 @@ object Day24 extends App:
   * - if no possible targets, abandon branch
   * - choose shortest
   */
-
+  calculateBlizzards()
   task1()
+  task2()
 
   class Blizzard(private val start: (Int, Int), direction: Char):
 
@@ -105,7 +106,7 @@ object Day24 extends App:
     markBlizzards('x')
     markBlizzards('y')
 
-  def bfsRoute(start: (Int, Int), target: (Int, Int)): Int =
+  def bfsRoute(start: (Int, Int), target: (Int, Int), firstTurn: Int = 0): Int =
 
     case class State(pos: (Int, Int), turn: Int):
 
@@ -114,11 +115,11 @@ object Day24 extends App:
         val result = Buffer[(Int,Int)]()
         if x > 0 then
           result += ((x - 1, y))
-        if x < lines.head.length then
+        if x < lines.head.length - 1 then
           result += ((x + 1, y))
         if y > 0 then
           result += ((x, y - 1))
-        if y < lines.length then //TODO: Store top limit in variable
+        if y < lines.length - 1 then //TODO: Store top limit in variable
           result += ((x, y + 1))
         result += pos
         result.toVector
@@ -134,7 +135,7 @@ object Day24 extends App:
         for neighbor <- neighbors do
           val (newX, newY) = neighbor
           if !map(newX)(newY).contains(turnX) && !yMap(newX)(newY).contains(turnY) then
-            possible += State(neighbor, nextTurn % (2* cycleLen))
+            possible += State(neighbor, nextTurn % (3*cycleLen))
         possible.toVector
 
     end State
@@ -150,7 +151,8 @@ object Day24 extends App:
         if v.pos == target then
           answer = Some(v.turn)
         else
-          for next <- v.possibleNext do
+          val possible = v.possibleNext
+          for next <- possible do
             if !explored.contains(next) then
               explored += next
               queue.enqueue(next)
@@ -179,11 +181,16 @@ object Day24 extends App:
               print(".")
           print("\n")
 
-    val startState = State(start, 0)
+    val startState = State(start, firstTurn % (3*cycleLen))
     bfs(startState)
 
 
   def task1() =
-    calculateBlizzards()
     val result = bfsRoute((1,0), (cycleX, cycleY + 1))
     println(result)
+
+  def task2() =
+    val step1 = bfsRoute((1,0), (cycleX, cycleY + 1))
+    val step2 = bfsRoute((cycleX, cycleY + 1), (1,0), step1 + 1)
+    val step3 = bfsRoute((1,0), (cycleX, cycleY + 1), step2 + 1)
+    println(step3)
