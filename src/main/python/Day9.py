@@ -10,7 +10,7 @@ class Day9:
 	tail = [(0,0)] * 9
 
 	def parseFile(self):
-		with open("../../../day9_input") as file:
+		with open("../../../input/day9_input") as file:
 			for line in file.readlines():
 				parts = line.strip().split(" ")
 				self.directions.append((parts[0], int(parts[1])))
